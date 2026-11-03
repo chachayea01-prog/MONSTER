@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAIJU CLASH: 怪獸格鬥霸主 (Monster Fighting Game)</title>
+  <meta name="description" content="極致熱血的HTML5怪獸格鬥網頁遊戲！操控遠古炎龍、鋼鐵機甲巨獸，釋放華麗必殺技與超奧義，爭奪怪獸之王寶座！">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Game Shell -->
+  <main class="game-wrapper" id="gameWrapper">
+    <!-- CRT Retro Scanlines Overlay -->
+    <div class="scanlines"></div>
+
+    <!-- Battle Canvas -->
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <!-- 1. MAIN MENU SCREEN -->
+    <section class="ui-screen" id="screenMenu">
+      <div class="menu-brand">
+        <h1 class="menu-title">KAIJU CLASH</h1>
+        <p class="menu-subtitle">怪獸格鬥霸主・世紀巔峰之戰</p>
+      </div>
+
+      <div class="menu-actions">
+        <button class="btn-arcade" id="btnModeArcade">⚡ 闖關模式 (ARCADE)</button>
+        <button class="btn-arcade cyber" id="btnModePVP">⚔️ 雙人對決 (2-PLAYER)</button>
+        <button class="btn-arcade" id="btnModeTraining">🥋 自由訓練 (TRAINING)</button>
+      </div>
+
+      <div class="menu-footer">
+        <button class="btn-tool" id="btnOpenControls">📖 操作指南 (Controls)</button>
+        <button class="btn-tool" id="btnToggleSound">🔊 音效: 開啟</button>
+      </div>
+    </section>
+
+    <!-- 2. CHARACTER SELECTION SCREEN -->
+    <section class="ui-screen hidden" id="screenSelect">
+      <header class="select-header">
+        <h2 class="select-title">CHOOSE YOUR MONSTER (選擇出戰怪獸)</h2>
+      </header>
+
+      <div class="select-content">
+        <!-- Roster Grid -->
+        <div class="roster-grid">
+          <!-- 1. Pyrorex -->
+          <div class="char-card selected" data-id="pyrorex" id="card-pyrorex">
+            <img class="char-thumb" src="assets/avatar_pyrorex.jpg" alt="Pyrorex">
+            <div class="char-name">炎獄巨龍・伊格尼斯</div>
+            <div class="char-tag">烈焰系 / 高爆發</div>
+          </div>
+
+          <!-- 2. Mecha Titan -->
+          <div class="char-card" data-id="mecha" id="card-mecha">
+            <img class="char-thumb" src="assets/avatar_mecha.jpg" alt="Mecha Titan">
+            <div class="char-name">鋼鐵霸主・泰坦-09</div>
+            <div class="char-tag">機械系 / 銅牆鐵壁</div>
+          </div>
+
+          <!-- 3. Shadow Viper -->
+          <div class="char-card" data-id="viper" id="card-viper">
+            <div class="char-thumb" style="background: radial-gradient(circle, #a855f7 0%, #1e112a 100%); display:flex; align-items:center; justify-content:center; font-size:38px;">🐍</div>
+            <div class="char-name">深淵幽影・魔蛇拉</div>
+            <div class="char-tag">虛空毒系 / 極速突刺</div>
+          </div>
+
+          <!-- 4. Thunder Voltgor -->
+          <div class="char-card" data-id="voltgor" id="card-voltgor">
+            <div class="char-thumb" style="background: radial-gradient(circle, #fde047 0%, #292524 100%); display:flex; align-items:center; justify-content:center; font-size:38px;">⚡</div>
+            <div class="char-name">雷霆暴君・電角狂犀</div>
+            <div class="char-tag">雷電系 / 連段壓制</div>
+          </div>
+        </div>
+
+        <!-- Detail Preview Column -->
+        <div class="detail-card">
+          <div class="preview-top">
+            <img class="preview-avatar" id="charPreviewImg" src="assets/avatar_pyrorex.jpg" alt="Selected Monster">
+            <div class="preview-info">
+              <h3 class="preview-name" id="charPreviewName">炎獄巨龍・伊格尼斯</h3>
+              <div class="preview-type" id="charPreviewType">烈焰系 (Fire Kaiju)</div>
+              <p class="preview-desc" id="charPreviewDesc">熔岩核心孕育的遠古炎龍，體內流動著上千度的毀滅地漿，擅長強力的火炎撕裂與隕石召喚。</p>
+            </div>
+          </div>
+
+          <!-- Stats Bars -->
+          <div class="stats-container">
+            <div class="stat-row">
+              <span class="stat-label">生命力 (HP)</span>
+              <div class="stat-bar-bg"><div class="stat-bar-fill" id="statHp" style="width: 85%;"></div></div>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">攻擊力 (ATK)</span>
+              <div class="stat-bar-bg"><div class="stat-bar-fill" id="statAtk" style="width: 95%;"></div></div>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">防禦力 (DEF)</span>
+              <div class="stat-bar-bg"><div class="stat-bar-fill" id="statDef" style="width: 80%;"></div></div>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">敏捷度 (SPD)</span>
+              <div class="stat-bar-bg"><div class="stat-bar-fill" id="statSpd" style="width: 85%;"></div></div>
+            </div>
+          </div>
+
+          <!-- Moves Summary -->
+          <div class="moves-summary">
+            <div>🔥 技能1 [U]: <strong id="moveSp1">熾熱炎彈 (Fireball)</strong> (消耗 25 MP)</div>
+            <div>⚡ 技能2 [I]: <strong id="moveSp2">地獄烈焰衝刺 (Flame Dash)</strong> (消耗 35 MP)</div>
+            <div>👑 終極超必殺 [O]: <strong id="moveUlt">滅世火殞 (Cataclysm Flare)</strong> (滿能量釋放)</div>
+          </div>
+
+          <button class="btn-arcade" id="btnConfirmSelect" style="width: 100%;">🔥 鎖定出戰 (START BATTLE)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. IN-GAME HUD -->
+    <section class="ui-screen hidden" id="screenHUD">
+      <!-- Top Bars -->
+      <div class="hud-top">
+        <!-- Player 1 -->
+        <div class="hud-fighter p1">
+          <div class="hud-fighter-info">
+            <span class="fighter-name" id="p1Name">PLAYER 1</span>
+          </div>
+          <div class="hp-bar-outer">
+            <div class="hp-bar-red" id="p1HpRed"></div>
+            <div class="hp-bar-fill" id="p1HpFill"></div>
+          </div>
+          <div class="energy-bar-outer">
+            <div class="energy-bar-fill" id="p1EnergyFill"></div>
+          </div>
+          <div class="ult-badge" id="p1UltBadge">⚡ EX BURST READY [按 O 釋放]</div>
+        </div>
+
+        <!-- Center Timer & Controls Toggle -->
+        <div class="hud-center">
+          <div class="hud-timer" id="hudTimer">99</div>
+          <button class="btn-toggle-vpad" id="btnToggleVpad">🎮 虛擬鍵盤 [開/關]</button>
+        </div>
+
+        <!-- Player 2 / AI -->
+        <div class="hud-fighter p2">
+          <div class="hud-fighter-info">
+            <span class="fighter-name" id="p2Name">PLAYER 2</span>
+          </div>
+          <div class="hp-bar-outer">
+            <div class="hp-bar-red" id="p2HpRed"></div>
+            <div class="hp-bar-fill" id="p2HpFill"></div>
+          </div>
+          <div class="energy-bar-outer">
+            <div class="energy-bar-fill" id="p2EnergyFill"></div>
+          </div>
+          <div class="ult-badge" id="p2UltBadge">⚡ EX BURST READY</div>
+        </div>
+      </div>
+
+      <!-- Center Round Announcer Banner -->
+      <div class="round-banner" id="bannerRound">
+        <div class="banner-title">ROUND 1</div>
+        <div class="banner-sub">FIGHT!</div>
+      </div>
+
+      <!-- Virtual On-Screen Controls (for mouse/touch testing) -->
+      <div class="virtual-controls" id="virtualControls">
+        <!-- Movement D-Pad -->
+        <div class="vpad-group">
+          <button class="vbtn" id="vbtn-left">◀ A</button>
+          <button class="vbtn" id="vbtn-right">▶ D</button>
+          <button class="vbtn" id="vbtn-up">▲ W</button>
+          <button class="vbtn" id="vbtn-down">▼ S</button>
+        </div>
+
+        <!-- Actions -->
+        <div class="vpad-group">
+          <button class="vbtn" id="vbtn-guard">🛡️ 防禦 L</button>
+          <button class="vbtn atk" id="vbtn-atk1">輕拳 J</button>
+          <button class="vbtn atk" id="vbtn-atk2">重擊 K</button>
+          <button class="vbtn" id="vbtn-sp1">技1 U</button>
+          <button class="vbtn" id="vbtn-sp2">技2 I</button>
+          <button class="vbtn ult" id="vbtn-ult">⚡奧義 O</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. VICTORY / DEFEAT SCREEN -->
+    <section class="ui-screen hidden" id="screenVictory">
+      <div class="vic-card">
+        <h2 class="vic-title" id="vicTitle">VICTORY!</h2>
+        <p class="vic-desc" id="vicDesc">恭喜擊敗對手，制霸怪獸競技場！</p>
+        <div class="vic-actions">
+          <button class="btn-arcade" id="btnNextStage">進入下一關 (Next Stage)</button>
+          <button class="btn-arcade cyber" id="btnRematch">重新挑戰 (Rematch)</button>
+          <button class="btn-tool" id="btnReturnMenu">返回主選單 (Menu)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. CONTROLS GUIDE MODAL -->
+    <div class="modal hidden" id="modalControls">
+      <div class="modal-content">
+        <h3 class="modal-title">⚔️ 遊戲操作與出招指南 ⚔️</h3>
+        <table class="modal-table">
+          <thead>
+            <tr>
+              <th>動作 (Action)</th>
+              <th>1P (玩家 1)</th>
+              <th>2P (玩家 2 / 雙人對打)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>左右移動 / 衝刺</td>
+              <td><span class="key-tag">A</span> / <span class="key-tag">D</span> (按兩下或Shift衝刺)</td>
+              <td><span class="key-tag">←</span> / <span class="key-tag">→</span></td>
+            </tr>
+            <tr>
+              <td>跳躍 / 二段跳</td>
+              <td><span class="key-tag">W</span> (空中可再按一次)</td>
+              <td><span class="key-tag">↑</span></td>
+            </tr>
+            <tr>
+              <td>蹲下迴避</td>
+              <td><span class="key-tag">S</span></td>
+              <td><span class="key-tag">↓</span></td>
+            </tr>
+            <tr>
+              <td>輕攻擊 (Combo起手)</td>
+              <td><span class="key-tag">J</span></td>
+              <td><span class="key-tag">Num 1</span> 或 <span class="key-tag">N</span></td>
+            </tr>
+            <tr>
+              <td>重攻擊 (擊飛擊退)</td>
+              <td><span class="key-tag">K</span></td>
+              <td><span class="key-tag">Num 2</span> 或 <span class="key-tag">M</span></td>
+            </tr>
+            <tr>
+              <td>格擋 / 完美招架</td>
+              <td><span class="key-tag">L</span> (受擊瞬間按觸發反震彈刀!)</td>
+              <td><span class="key-tag">Num 3</span> 或 <span class="key-tag">,</span></td>
+            </tr>
+            <tr>
+              <td>必殺技1: 遠程能量彈</td>
+              <td><span class="key-tag">U</span> (消耗 25 MP)</td>
+              <td><span class="key-tag">Num 4</span> 或 <span class="key-tag">H</span></td>
+            </tr>
+            <tr>
+              <td>必殺技2: 突進重錘技</td>
+              <td><span class="key-tag">I</span> (消耗 35 MP)</td>
+              <td><span class="key-tag">Num 5</span> 或 <span class="key-tag">Y</span></td>
+            </tr>
+            <tr>
+              <td>終極奧義 (EX Burst)</td>
+              <td><span class="key-tag">O</span> (滿100能量全螢幕毀滅技)</td>
+              <td><span class="key-tag">Num 6</span> 或 <span class="key-tag">T</span></td>
+            </tr>
+            <tr>
+              <td>暫停遊戲</td>
+              <td colspan="2"><span class="key-tag">P</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="text-align: center;">
+          <button class="btn-arcade" id="btnCloseControls">我瞭解了！開始戰鬥</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/monsters.js"></script>
+  <script src="js/game.js"></script>
+
+  <script>
+    // Controls Modal toggle
+    const modalControls = document.getElementById('modalControls');
+    document.getElementById('btnOpenControls').addEventListener('click', () => {
+      modalControls.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseControls').addEventListener('click', () => {
+      modalControls.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>
